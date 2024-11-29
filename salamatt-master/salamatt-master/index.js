@@ -2,7 +2,9 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const cors = require('cors');
 const app = express();
+const path = require('path') //Just added this today on 29th november
 
+app.use(express.static('public')); // Also 29th november. This line serves files from the 'public' folder
 
 app.use(cors());
 app.use(bodyparser.json())
@@ -189,7 +191,10 @@ app.put('/complaints/:complaint_id', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-
+// just added this today 29th november 2024
+app.get('/', (req, res) => {
+    res.sendFile(path.join(__dirname, '/clinic/clinic-frontend/index.html'));
+});
 
 
 // Start the server
