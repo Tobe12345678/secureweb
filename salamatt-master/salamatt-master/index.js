@@ -14,9 +14,9 @@ const { report } = require('process');
 const pool = new Pool({
     host: 'localhost',
     port: 5432,
-    database: 'clinic',
-    user: 'postgres',
-    password: '1234',
+    database: 'Secure-web',
+    user: 'app_user',
+    password: 'Nuj1493tobe99.',
 });
 
 pool.connect()
