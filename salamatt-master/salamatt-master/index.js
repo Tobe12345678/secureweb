@@ -14,10 +14,10 @@ const { Pool } = require('pg');
 const { error } = require('console');
 const { report } = require('process');
 const pool = new Pool({
+    user: 'postgres',
     host: 'localhost',
     port: 5432,
-    database: 'Secure-web',
-    user: 'app_user',
+    database: 'hospital-proj',
     password: 'Nuj1493tobe99.',
 });
 
@@ -29,34 +29,40 @@ pool.connect()
 const authenticateUser = (req, res, next) => {
     // Check if user is logged in (you can implement your own authentication logic here)
     const isLoggedIn = true; // Replace with your authentication logic
-    
+
     if (isLoggedIn) {
-      // User is authenticated, proceed to the next middleware or route handler
-      next();
+        // User is authenticated, proceed to the next middleware or route handler
+        next();
     } else {
-      // User is not authenticated, send an error response
-      res.status(401).json({ error: 'Unauthorized' });
+        // User is not authenticated, send an error response
+        res.status(401).json({ error: 'Unauthorized' });
     }
-  };
-  
-  // Apply the authentication middleware to the routes that require authentication
-  app.use('/profile', authenticateUser);
-  // Add more routes that require authentication here
+};
+
+// Apply the authentication middleware to the routes that require authentication
+app.use('/profile', authenticateUser);
+// Add more routes that require authentication here
 
 // Example API endpoint
 // Create a user
 app.post('/users', async (req, res) => {
-    try {
-        const { name, age, gender, year, dept, email, password } = req.body;
-        const query = 'INSERT INTO student ( name, age, gender, year, dept, email, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
-        const values = [name, age, gender, year, dept, email, password];
-
-        const result = await pool.query(query, values);
-        res.json(result.rows[0]);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Server error' });
-    }
+    //try {
+    const { name, age, gender, year, dept, email, password } = req.body;
+    // const query = ;
+    // const values = ;
+    pool.query('INSERT INTO public.student ( name, age, gender, year, dept, email, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [name, age, gender, year, dept, email, password], (error, results) => {
+        if (error) {
+            console.log(error)
+        } else (
+            res.status(201).send(`USer added, ${result.rows[0]}`)
+        )
+    })
+    //const result = await pool.query(query, values);
+    //   res.json(result.rows[0]);
+    // } catch (error) {
+    //     console.error(error);
+    //     res.status(500).json({ error: 'Server error' });
+    // }
 });
 
 // Get a user by Matric no
@@ -99,27 +105,27 @@ app.post('/users/login', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-
+// profile route
 app.get('/profile/:id', async (req, res) => {
     try {
-      const { id } = req.params;
-      const query = 'SELECT * FROM student WHERE id = $1';
-      const values = [id];
-  
-      const result = await pool.query(query, values);
-  
-      if (result.rows.length === 0) {
-        res.status(404).json({ error: 'User not found' });
-      } else {
-        const profileData = result.rows[0];
-        res.json({profileData, id});
-      }
+        const { id } = req.params;
+        const query = 'SELECT * FROM student WHERE id = $1';
+        const values = [id];
+
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            res.status(404).json({ error: 'User not found' });
+        } else {
+            const profileData = result.rows[0];
+            res.json({ profileData, id });
+        }
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Server error' });
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
     }
-  });
-  
+});
+
 
 // Create a complaint for a user
 app.post('/complaints', async (req, res) => {
@@ -163,25 +169,25 @@ app.get('/complaints/:id', async (req, res) => {
 // Get all complaints
 app.get('/admin/complaints', async (req, res) => {
     try {
-      // Retrieve the complaints from the database
-      const query = 'SELECT * FROM complaints';
-      const result = await pool.query(query);
-      const complaints = result.rows;
-  
-      res.json(complaints);
+        // Retrieve the complaints from the database
+        const query = 'SELECT * FROM complaints';
+        const result = await pool.query(query);
+        const complaints = result.rows;
+
+        res.json(complaints);
     } catch (error) {
-      console.error(error);
-      res.status(500).json({ error: 'Server error' });
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
     }
-  });
-  
+});
+
 // Update a complaint by ID
 app.put('/complaints/:complaint_id', async (req, res) => {
     try {
         const complaint_id = parseInt(req.params.complaint_id)
         const { report } = req.body;
         const query = 'UPDATE complaints SET report = $1 WHERE id = $2';
-        const values = [ report, complaint_id];
+        const values = [report, complaint_id];
 
         const result = await pool.query(query, values);
         console.log(report)

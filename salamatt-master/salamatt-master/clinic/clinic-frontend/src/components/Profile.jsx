@@ -1,21 +1,26 @@
 import React, { useState, useEffect } from "react";
 import axios from 'axios';
-import { useParams } from "react-router-dom";
-
+import { useParams, Link } from "react-router-dom";
+import Complaints from "./Complaints";
 function Profile() {
-  const [profile, setProfile] = useState('');
+  const [student, setStudent] = useState('');
   const { id } = useParams();
 
   useEffect(() => {
     const fetchProfileData = async () => {
-      try {
-        const response = await axios.get(`http://localhost:3000/profile/${id}`);
-        const { profileData } = response.data;
-        setProfile(profileData);
-      } catch (error) {
-        console.error(error);
+      const id = localStorage.getItem('id');  // Get id from localStorage
+      if (!id) {
+          console.error("User is not logged in");
+          return;
       }
-    };
+
+      try {
+          const response = await axios.get(`http://localhost:3000/profile/${id}`);
+          setStudent(response.data.profileData);  // Use profileData instead of the full response
+      } catch (error) {
+          console.error(error);
+      }
+  };
 
     fetchProfileData();
   }, [id]);
@@ -23,13 +28,14 @@ function Profile() {
 
   return (
     <div>
-      <h2>Profile</h2>
+ <Link to="/complaints">Profile</Link>      
+ <h2>Profile</h2>
       <div>
         <p>ID: {id}</p>
-        <p>Symptoms: {profile.name}</p>
-        <p>Email: {profile.email}</p>
-        <p>Department: {profile.dept}</p>
-        <p>Gender: {profile.gender}</p>
+        <p>Name: {student.name}</p>
+        <p>Email: {student.email}</p>
+        <p>Department: {student.dept}</p>
+        <p>Gender: {student.gender}</p>
       </div>
     </div>
   );

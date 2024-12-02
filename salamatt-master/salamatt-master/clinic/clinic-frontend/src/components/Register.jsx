@@ -10,7 +10,7 @@ function Register() {
   const [dept, setDept] = useState('');
   const [gender, setGender] = useState('');
   const [age, setAge] = useState('');
-  const redirect = useNavigate('');
+  const navigate = useNavigate('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
