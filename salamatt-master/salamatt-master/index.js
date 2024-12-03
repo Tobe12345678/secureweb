@@ -3,10 +3,10 @@ const bodyparser = require('body-parser');
 const cors = require('cors');
 const app = express();
 const path = require('path') //Just added this today on 29th november
-
+const bcrypt = require('bcrypt')
 app.use(express.static('public')); // Also 29th november. This line serves files from the 'public' folder
 
-app.use(cors());
+app.use(cors({ origin: 'http://localhost:5173'}));
 app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({ extended: true }))
 
@@ -21,6 +21,7 @@ const pool = new Pool({
     password: 'Nuj1493tobe99.',
 });
 
+const saltRounds = 10
 pool.connect()
     .then(() => console.log("connected"))
     .catch(err => console.error("couldn't connect", err.stack))
@@ -46,24 +47,21 @@ app.use('/profile', authenticateUser);
 // Example API endpoint
 // Create a user
 app.post('/users', async (req, res) => {
-    //try {
-    const { name, age, gender, year, dept, email, password } = req.body;
-    // const query = ;
-    // const values = ;
-    pool.query('INSERT INTO public.student ( name, age, gender, year, dept, email, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *', [name, age, gender, year, dept, email, password], (error, results) => {
-        if (error) {
-            console.log(error)
-        } else (
-            res.status(201).send(`USer added, ${result.rows[0]}`)
-        )
-    })
-    //const result = await pool.query(query, values);
-    //   res.json(result.rows[0]);
-    // } catch (error) {
-    //     console.error(error);
-    //     res.status(500).json({ error: 'Server error' });
-    // }
+    try {
+        const { name, age, gender, year, dept, email, password } = req.body;
+        const query = 'INSERT INTO public.student (name, age, gender, year, dept, email, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
+        const hashed = bcrypt.hashSync(password, saltRounds);
+
+        const values = [name, age, gender, year, dept, email, hashed];
+        const result = await pool.query(query, values);
+
+        res.status(201).json({ message: `User added: ${result.rows[0].name}` });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
 });
+
 
 // Get a user by Matric no
 app.get('/users/:matric_no', async (req, res) => {
@@ -90,21 +88,28 @@ app.get('/users/:matric_no', async (req, res) => {
 app.post('/users/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-        const query = 'SELECT * FROM student WHERE email = $1 AND password = $2';
-        const values = [email, password];
-
+        
+        // Retrieve the user from the database based on email
+        const query = 'SELECT * FROM student WHERE email = $1';
+        const values = [email];
         const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
-            res.status(404).json({ error: 'User not found' });
-        } else {
-            res.json(result.rows[0]);
+            return res.status(404).json({ error: 'User not found' });
+        }
+        const user = result.rows[0];
+        if (user.password === password) {
+            // Password matches
+            res.status(200).json({ message: 'Login successful', user });
+        }else {
+            res.status(401).json({ error: 'Invalid credentials' });
         }
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
     }
 });
+
 // profile route
 app.get('/profile/:id', async (req, res) => {
     try {

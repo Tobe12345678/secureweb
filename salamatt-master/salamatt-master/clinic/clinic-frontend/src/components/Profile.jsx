@@ -4,27 +4,21 @@ import { useParams, Link } from "react-router-dom";
 import Complaints from "./Complaints";
 function Profile() {
   const [student, setStudent] = useState('');
-  const { id } = useParams();
+  const id = localStorage.getItem('id'); // Make sure 'id' is stored correctly in localStorage
 
-  useEffect(() => {
-    const fetchProfileData = async () => {
-      const id = localStorage.getItem('id');  // Get id from localStorage
-      if (!id) {
-          console.error("User is not logged in");
-          return;
-      }
-
-      try {
-          const response = await axios.get(`http://localhost:3000/profile/${id}`);
-          setStudent(response.data.profileData);  // Use profileData instead of the full response
-      } catch (error) {
-          console.error(error);
-      }
+useEffect(() => {
+  const fetchProfileData = async () => {
+    try {
+      const response = await axios.get(`http://localhost:3000/profile/${id}`);
+      setStudent(response.data.profileData);
+    } catch (error) {
+      console.error('Error fetching profile:', error);
+    }
   };
 
-    fetchProfileData();
-  }, [id]);
-
+  if (id) fetchProfileData();
+  else console.error('User ID not found in localStorage');
+}, [id]);
 
   return (
     <div>
