@@ -109,6 +109,7 @@ app.post('/users/login', async (req, res) => {
         const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
+            console.error(`Login failed: User not found for email - ${email}`);
             return res.status(404).json({ error: 'User not found. Please register first' });
         }
 
@@ -117,10 +118,12 @@ app.post('/users/login', async (req, res) => {
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         
         if (!isPasswordMatch) {
+            console.error(`Login failed: Invalid credentials for email - ${email}`);
             return res.status(401).json({ error: 'Invalid credentials. Please try again.' });
         }
 
         // for Successful Login
+        console.log(`Login successful for user ID: ${user.id}`);
         res.status(200).json({
             message: 'Login successful.',
             user: { id: user.id, name: user.name, email: user.email },

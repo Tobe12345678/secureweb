@@ -4,18 +4,20 @@ import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
 function Login() {
+    const [errorMessage, setErrorMessage] = useState('')
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate()
     const handleSubmit = async (e) => {
         e.preventDefault();
+        setErrorMessage(''); // Clear previous errors
    
         try {
             const response = await axios.post(`http://localhost:3000/users/login`, {
                 email,
                 password
             }, {
-                timeout: 5000, // Set a higher timeout value (in milliseconds)
+                timeout: 1000000, // Set a higher timeout value (in milliseconds)
             });
 
             // Save the user's ID to localStorage
@@ -25,6 +27,16 @@ function Login() {
             console.log(response.data);
         } catch (error) {
             // Handle error
+            if (error.response) {
+                // If the backend sent an error response, display the error message
+                setErrorMessage(error.response.data.error || 'An error occurred. Please try again.');
+            } else if (error.request) {
+                // If the request was made but no response was received
+                setErrorMessage('No response from the server. Please check your connection.');
+            } else {
+                // Any other errors
+                setErrorMessage('An unexpected error occurred. Please try again.');
+            }
             console.error(error);
         }
     };
@@ -41,11 +53,16 @@ function Login() {
                 <div>
                     <label htmlFor="password">Password:</label>
                     <input type="password" id="password" value={password} onChange={(e) => setPassword(e.target.value)} />
-                </div>
-                <button type="submit">Login</button>
+                    </div>
+                {errorMessage && (
+                    <div style={{ color: 'red', marginTop: '10px' }}>
+                        {errorMessage}
+                    </div>
+                )}
+                    <button type="submit">Login</button>
             </form>
         </div>
-    )
+    );
 }
 
 export default Login;
