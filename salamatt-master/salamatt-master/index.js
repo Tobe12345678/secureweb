@@ -158,13 +158,23 @@ app.get('/profile/:id', async (req, res) => {
 
 // Create a complaint for a user
 app.post('/complaints', async (req, res) => {
+    console.log('Incoming complaint data:', req.body);
     try {
         const { symptoms, duration, taken_drugs, students_id } = req.body;
+
+        // Debug log to check incoming data
+        console.log('Complaint data received:', { symptoms, duration, taken_drugs, students_id });
+
+        // Ensure all fields are provided
+        if (!symptoms || !duration || !taken_drugs || !students_id) {
+            return res.status(400).json({ error: 'All fields are required.' });
+        }
+
         const query = 'INSERT INTO complaints ( symptoms, duration, taken_drugs, students_id) VALUES ($1, $2, $3, $4) RETURNING *';
         const values = [symptoms, duration, taken_drugs, students_id];
 
         const result = await pool.query(query, values);
-        res.json(result.rows[0]);
+        res.status(201).json(result.rows[0]);
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });

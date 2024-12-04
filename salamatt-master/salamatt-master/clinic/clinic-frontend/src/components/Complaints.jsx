@@ -17,9 +17,9 @@ function Complaints() {
           setStudents_Id(student.id);
           const response = await axios.get(`http://localhost:3000/complaints/${student.id}`);
           console.log("Response data:", response.data);
-          const fetchedComplaints = response.data.complaints || [];
-          setComplaints(fetchedComplaints);
-          console.log("Complaints state:", fetchedComplaints);
+          setComplaints(response.data.complaint ? [response.data.complaint] : []);
+      } else {
+        console.error('No student logged in.');
         }
       } catch (error) {
         console.error(error);
@@ -33,7 +33,7 @@ function Complaints() {
     e.preventDefault();
     console.log(students_id);
 
-    if (!symptoms || !duration || !taken_drugs) {
+    if (!symptoms || !duration || !taken_drugs || !students_id) {
       console.error('Please fill in all the fields');
       return;
     }
@@ -43,6 +43,7 @@ function Complaints() {
         symptoms,
         duration,
         taken_drugs,
+        students_id, 
       });
       console.log(response.data);
 
@@ -52,7 +53,7 @@ function Complaints() {
       setDuration('');
       setTakenDrugs('');
     } catch (error) {
-      console.error(error);
+      console.error('Error submitting complaint:', error);
     }
   };
 
