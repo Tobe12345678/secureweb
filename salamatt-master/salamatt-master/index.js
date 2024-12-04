@@ -4,9 +4,18 @@ const cors = require('cors');
 const app = express();
 const path = require('path') //Just added this today on 29th november
 const bcrypt = require('bcrypt')
+const rateLimit = require('express-rate-limit');
+const registerLimiter = rateLimit({
+    windowMs: 10 * 60 * 1000, // 10 minutes
+    max: 7, // limit each IP address to 7 requests per window
+    message: "Too many registration attempts from this IP, You can try again later.",
+});
+
+app.use('/users', registerLimiter);
+app.use('/api', express.json());
 app.use(express.static('public')); // Also 29th november. This line serves files from the 'public' folder
 
-app.use(cors({ origin: 'http://localhost:5173'}));
+app.use(cors());
 app.use(bodyparser.json())
 app.use(bodyparser.urlencoded({ extended: true }))
 
@@ -88,6 +97,11 @@ app.get('/users/:matric_no', async (req, res) => {
 app.post('/users/login', async (req, res) => {
     try {
         const { email, password } = req.body;
+
+        // Check if email and password are provided
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required.' });
+        }
         
         // Retrieve the user from the database based on email
         const query = 'SELECT * FROM student WHERE email = $1';
@@ -95,17 +109,24 @@ app.post('/users/login', async (req, res) => {
         const result = await pool.query(query, values);
 
         if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'User not found' });
+            return res.status(404).json({ error: 'User not found. Please register first' });
         }
         const user = result.rows[0];
-        if (user.password === password) {
-            // Password matches
-            res.status(200).json({ message: 'Login successful', user });
-        }else {
-            res.status(401).json({ error: 'Invalid credentials' });
+        const hashed = bcrypt.hashSync(password, saltRounds);
+
+        const isPasswordMatch = await bcrypt.compare(password, user.password);
+        
+        if (!isPasswordMatch) {
+            return res.status(401).json({ error: 'Invalid credentials. Please try again.' });
         }
+
+        // **4. Successful Login**
+        res.status(200).json({
+            message: 'Login successful.',
+            user: { id: user.id, name: user.name, email: user.email },
+        });
     } catch (error) {
-        console.error(error);
+        console.error('Error during login', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
