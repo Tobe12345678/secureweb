@@ -111,8 +111,8 @@ app.post('/users/login', async (req, res) => {
         if (result.rows.length === 0) {
             return res.status(404).json({ error: 'User not found. Please register first' });
         }
+
         const user = result.rows[0];
-        const hashed = bcrypt.hashSync(password, saltRounds);
 
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         
@@ -120,7 +120,7 @@ app.post('/users/login', async (req, res) => {
             return res.status(401).json({ error: 'Invalid credentials. Please try again.' });
         }
 
-        // **4. Successful Login**
+        // for Successful Login
         res.status(200).json({
             message: 'Login successful.',
             user: { id: user.id, name: user.name, email: user.email },

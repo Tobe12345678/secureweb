@@ -17,6 +17,9 @@ function Login() {
             }, {
                 timeout: 5000, // Set a higher timeout value (in milliseconds)
             });
+
+            // Save the user's ID to localStorage
+            localStorage.setItem('id', response.data.user.id);
             // Handle successful login
             navigate('/profile')
             console.log(response.data);
