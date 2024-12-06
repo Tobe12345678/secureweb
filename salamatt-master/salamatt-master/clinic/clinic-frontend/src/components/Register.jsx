@@ -14,7 +14,12 @@ function Register() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+    
+    // Check if the password is at least 8 characters long
+  if (password.length < 8) {
+    alert('Sorry password must be at least 8 characters long.');
+    return;
+  }
     try {
       const response = await axios.post('http://localhost:3000/users', {
         name,

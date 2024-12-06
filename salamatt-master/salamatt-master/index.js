@@ -8,7 +8,6 @@ const rateLimit = require('express-rate-limit');
 const registerLimiter = rateLimit({
     windowMs: 10 * 60 * 1000, // 10 minutes
     max: 7, // limit each IP address to 7 requests per window
-    message: "Too many registration attempts from this IP, You can try again later.",
 });
 
 app.use('/users', registerLimiter);
@@ -58,6 +57,12 @@ app.use('/profile', authenticateUser);
 app.post('/users', async (req, res) => {
     try {
         const { name, age, gender, year, dept, email, password } = req.body;
+
+        // Code to Check if the password is at least 8 characters long
+    if (password.length < 8) {
+        return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
+      }
+
         const query = 'INSERT INTO public.student (name, age, gender, year, dept, email, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
         const hashed = bcrypt.hashSync(password, saltRounds);
 
@@ -205,8 +210,8 @@ app.get('/complaints/:id', async (req, res) => {
     }
 });
 
-// Get all complaints
-app.get('/admin/complaints', async (req, res) => {
+// Get all complaints. I restricted this role to only Admins 
+app.get('/admin/complaints', authenticateUser, authorizeRole('admin'), async (req, res) => {
     try {
         // Retrieve the complaints from the database
         const query = 'SELECT * FROM complaints';
@@ -240,7 +245,19 @@ app.put('/complaints/:complaint_id', async (req, res) => {
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/clinic/clinic-frontend/index.html'));
 });
-
+// a route for Admins to delete users or complaints. Basically, a route for deleting records
+app.delete('/complaints/:complaint_id', async (req, res) => {
+    try {
+        const { complaint_id } = req.params;
+        const query = 'DELETE FROM complaints WHERE id = $1';
+        const values = [complaint_id];
+        await pool.query(query, values);
+        res.status(200).json({ message: 'Complaint deleted successfully.' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
 
 // Start the server
 app.listen(3000, () => {
