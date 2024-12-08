@@ -22,6 +22,9 @@ function HospitalLandingPage() {
           <li>
             <Link to="/complaints">Complaints</Link>
           </li>
+          <li>
+            <Link to="/admin/login">Admin Login</Link>
+          </li>
         </ul>
       </div>
 
@@ -41,11 +44,14 @@ function HospitalLandingPage() {
         </Navbar>
 
         <header class="text-white text-center py-5">
-          
             <h1>Welcome to Pan-Atlantic University Clinic</h1>
             <p>We provide high-quality healthcare services.</p>
-            <Button variant="light">Learn More</Button>
-         
+            <div>
+               <Button variant="light">Learn More</Button>
+               <Link to="/admin/login">     
+                   <Button variant="primary" style={{ marginLeft: '10px' }}>Admin Login</Button>
+               </Link>
+            </div>
         </header>
 
         <section class="bg-light py-5">

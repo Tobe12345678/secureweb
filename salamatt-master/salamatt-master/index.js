@@ -35,18 +35,39 @@ pool.connect()
     .catch(err => console.error("couldn't connect", err.stack))
 
 // Middleware function to check if user is authenticated
-const authenticateUser = (req, res, next) => {
-    // Check if user is logged in (you can implement your own authentication logic here)
-    const isLoggedIn = true; // Replace with your authentication logic
+const jwt = require('jsonwebtoken');
 
-    if (isLoggedIn) {
-        // User is authenticated, proceed to the next middleware or route handler
-        next();
-    } else {
-        // User is not authenticated, send an error response
-        res.status(401).json({ error: 'Unauthorized' });
-    }
+// Middleware to authenticate the user
+const authenticateUser = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ message: 'Unauthorized. Token missing.' });
+  }
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the JWT
+    req.user = decoded; // Attach user information to the request object
+    next();
+  } catch (error) {
+    res.status(401).json({ message: 'Unauthorized. Invalid token.' });
+  }
 };
+
+// Middleware to check the user's role
+const authorizeRole = (role) => {
+    return (req, res, next) => {
+      const { is_admin } = req.user || {}; // Assumes req.user is populated by an authentication middleware
+  
+      // Check if the user has the required role
+      if (role === 'admin' && !is_admin) {
+        return res.status(403).json({ message: 'Access denied. Admins only.' });
+      }
+  
+      next(); // User has the required role, proceed to the next middleware
+    };
+  };
+  
 
 // Apply the authentication middleware to the routes that require authentication
 app.use('/profile', authenticateUser);
@@ -126,7 +147,12 @@ app.post('/users/login', async (req, res) => {
             console.error(`Login failed: Invalid credentials for email - ${email}`);
             return res.status(401).json({ error: 'Invalid credentials. Please try again.' });
         }
-
+        // Generate the JWT for the user
+        const token = jwt.sign(
+            { id: user.id, is_admin: user.is_admin }, // Payload (user info)
+            'your_jwt_secret', // Secret key to sign the token (use a secure secret here)
+            { expiresIn: '1h' } // Token expiration time (optional)
+        );
         // for Successful Login
         console.log(`Login successful for user ID: ${user.id}`);
         res.status(200).json({
@@ -135,6 +161,49 @@ app.post('/users/login', async (req, res) => {
         });
     } catch (error) {
         console.error('Error during login', error);
+        res.status(500).json({ error: 'Server error' });
+    }
+});
+// for admin login
+app.post('/admin/login', async (req, res) => {
+    try {
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            return res.status(400).json({ error: 'Email and password are required.' });
+        }
+
+        // Check if the email belongs to an admin
+        const query = 'SELECT * FROM student WHERE email = $1 AND is_admin = true';
+        const values = [email];
+        const result = await pool.query(query, values);
+
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: 'Admin not found or unauthorized.' });
+        }
+
+        const admin = result.rows[0];
+
+        // Check password
+        const isPasswordMatch = await bcrypt.compare(password, admin.password);
+
+        if (!isPasswordMatch) {
+            return res.status(401).json({ error: 'Invalid credentials. Please try again.' });
+        }
+        // Generate the JWT for the admin
+        const token = jwt.sign(
+            { id: admin.id, is_admin: admin.is_admin }, // Payload (admin info)
+            'your_jwt_secret', // Secret key to sign the token
+            { expiresIn: '1h' } // Token expiration time (optional)
+        );
+
+        // Admin successfully logged in
+        res.status(200).json({
+            message: 'Admin login successful.',
+            admin: { id: admin.id, name: admin.name, email: admin.email },
+        });
+    } catch (error) {
+        console.error('Error during admin login', error);
         res.status(500).json({ error: 'Server error' });
     }
 });
