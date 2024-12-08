@@ -47,7 +47,7 @@ const authenticateUser = (req, res, next) => {
 
   try {
     const decoded = jwt.verify(token, process.env.JWT_SECRET); // Verify the JWT
-    req.user = decoded; // Attach user information to the request object
+    req.user = decoded; // Attach user data like id and role to the request to be used later
     next();
   } catch (error) {
     res.status(401).json({ message: 'Unauthorized. Invalid token.' });
