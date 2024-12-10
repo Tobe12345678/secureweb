@@ -8,6 +8,8 @@ function Login() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
     const navigate = useNavigate()
+
+    console.log(email);
     const handleSubmit = async (e) => {
         e.preventDefault();
         setErrorMessage(''); // Clear previous errors
@@ -19,12 +21,19 @@ function Login() {
             }, {
                 timeout: 1000000, // Set a higher timeout value (in milliseconds)
             });
+            const { id, is_admin, name, email: emailFromDb } = response.data.user;
+            const token = response.data.token;
 
             // Save the user's ID to localStorage
-            localStorage.setItem('id', response.data.user.id);
-            // Handle successful login
-            navigate('/profile')
-            console.log(response.data);
+            localStorage.setItem('id', id);
+            localStorage.setItem('is_admin', is_admin);
+            localStorage.setItem('token', token);
+
+            if (is_admin) {
+                navigate('/admin/complaints'); // Redirect to the admin complaints page
+            } else {
+                navigate('/profile'); // Redirect to the user profile
+            }
         } catch (error) {
             // Handle error
             if (error.response) {

@@ -68,7 +68,6 @@ const authorizeRole = (role) => {
     };
   };
   
-
 // Apply the authentication middleware to the routes that require authentication
 app.use('/profile', authenticateUser);
 // Add more routes that require authentication here
@@ -157,53 +156,11 @@ app.post('/users/login', async (req, res) => {
         console.log(`Login successful for user ID: ${user.id}`);
         res.status(200).json({
             message: 'Login successful.',
-            user: { id: user.id, name: user.name, email: user.email },
+            user: { id: user.id, name: user.name, email: user.email, is_admin: user.is_admin },
+            token
         });
     } catch (error) {
         console.error('Error during login', error);
-        res.status(500).json({ error: 'Server error' });
-    }
-});
-// for admin login
-app.post('/admin/login', async (req, res) => {
-    try {
-        const { email, password } = req.body;
-
-        if (!email || !password) {
-            return res.status(400).json({ error: 'Email and password are required.' });
-        }
-
-        // Check if the email belongs to an admin
-        const query = 'SELECT * FROM student WHERE email = $1 AND is_admin = true';
-        const values = [email];
-        const result = await pool.query(query, values);
-
-        if (result.rows.length === 0) {
-            return res.status(404).json({ error: 'Admin not found or unauthorized.' });
-        }
-
-        const admin = result.rows[0];
-
-        // Check password
-        const isPasswordMatch = await bcrypt.compare(password, admin.password);
-
-        if (!isPasswordMatch) {
-            return res.status(401).json({ error: 'Invalid credentials. Please try again.' });
-        }
-        // Generate the JWT for the admin
-        const token = jwt.sign(
-            { id: admin.id, is_admin: admin.is_admin }, // Payload (admin info)
-            'your_jwt_secret', // Secret key to sign the token
-            { expiresIn: '1h' } // Token expiration time (optional)
-        );
-
-        // Admin successfully logged in
-        res.status(200).json({
-            message: 'Admin login successful.',
-            admin: { id: admin.id, name: admin.name, email: admin.email },
-        });
-    } catch (error) {
-        console.error('Error during admin login', error);
         res.status(500).json({ error: 'Server error' });
     }
 });

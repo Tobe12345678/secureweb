@@ -13,7 +13,9 @@ function Complaints() {
     const fetchComplaints = async () => {
       try {
         const student = Auth.getCurrentUser();
-        if (student) {
+        console.log("Fetched student from Auth:", student);
+        
+        if (student && student.id) {
           setStudents_Id(student.id);
           const response = await axios.get(`http://localhost:3000/complaints/${student.id}`);
           console.log("Response data:", response.data);
@@ -33,11 +35,26 @@ function Complaints() {
     e.preventDefault();
     console.log(students_id);
 
-    if (!symptoms || !duration || !taken_drugs || !students_id) {
-      console.error('Please fill in all the fields');
-      return;
-    }
+    // Validation for all fields
+  if (!symptoms) {
+    console.error('Symptoms field is required.');
+    return;
+  }
 
+  if (!duration) {
+    console.error('Duration field is required.');
+    return;
+  }
+
+  if (!taken_drugs) {
+    console.error('Please select if drugs were taken.');
+    return;
+  }
+
+  if (!students_id) {
+    console.error('Student ID is missing. Please log in.');
+    return;
+  }
     try {
       const response = await axios.post('http://localhost:3000/complaints', {
         symptoms,
@@ -85,9 +102,9 @@ function Complaints() {
           <label className="label">Taken any drugs?:</label>
           <select
            value={taken_drugs} 
-           onChange={(e) => setTakenDrugs(e.target.value)}>
+           onChange={(e) => setTakenDrugs(e.target.value)}
             className="select"
-  
+          >
             <option value="">Select an option</option>
             <option value="yes">Yes</option>
             <option value="no">No</option>
