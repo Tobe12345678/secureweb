@@ -4,7 +4,7 @@ const express = require('express');
 const bodyparser = require('body-parser');
 const cors = require('cors');
 const app = express();
-const path = require('path') //Just added this today on 29th november
+const path = require('path') //recently added
 const bcrypt = require('bcrypt')
 const rateLimit = require('express-rate-limit');
 const registerLimiter = rateLimit({
@@ -14,7 +14,7 @@ const registerLimiter = rateLimit({
 
 app.use('/users', registerLimiter);
 app.use('/api', express.json());
-app.use(express.static('public')); // Also 29th november. This line serves files from the 'public' folder
+app.use(express.static('public')); // This line serves files from the 'public' folder
 
 app.use(cors());
 app.use(bodyparser.json())
@@ -147,7 +147,7 @@ app.post('/users/login', async (req, res) => {
             console.error(`Login failed: Invalid credentials for email - ${email}`);
             return res.status(401).json({ error: 'Invalid credentials. Please try again.' });
         }
-        // code to Generate the JSON Web Token for the user (not completed yet)
+        // code to Generate the JSON Web Token for the user
         const token = jwt.sign(
             { id: user.id, is_admin: user.is_admin }, // the user info
             process.env.JWT_SECRET, // Secret key to sign the token.
