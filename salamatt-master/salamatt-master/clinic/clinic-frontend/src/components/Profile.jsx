@@ -4,12 +4,22 @@ import { useParams, Link } from "react-router-dom";
 import Complaints from "./Complaints";
 function Profile() {
   const [student, setStudent] = useState('');
-  const id = localStorage.getItem('id'); // Make sure 'id' is stored correctly in localStorage
-
+  const id = parseInt(localStorage.getItem('id'), 10); // Make sure 'id' is stored correctly in localStorage
+  console.log(id)
 useEffect(() => {
   const fetchProfileData = async () => {
     try {
-      const response = await axios.get(`http://localhost:3000/profile/${id}`);
+      const token = localStorage.getItem('token');
+    if (!token) {
+      console.error('Token is missing. Please log in again.');
+      return;
+    }
+      const response = await axios.get(`http://localhost:3000/profile/${id}`, {
+        headers: {
+          Authorization: `Bearer ${token}`, // Attach token to Authorization header
+        },
+      });
+      
       setStudent(response.data.profileData);
     } catch (error) {
       console.error('Error fetching profile:', error);

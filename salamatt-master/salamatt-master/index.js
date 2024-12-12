@@ -1,3 +1,5 @@
+require('dotenv').config(); // Load the .env file
+const jwtSecret = process.env.JWT_SECRET;
 const express = require('express');
 const bodyparser = require('body-parser');
 const cors = require('cors');
@@ -121,7 +123,7 @@ app.get('/users/:matric_no', async (req, res) => {
 app.post('/users/login', async (req, res) => {
     try {
         const { email, password } = req.body;
-
+        console.log(email)
         // Input validation for the login page. Check if email and password are provided
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password are required.' });
@@ -138,7 +140,7 @@ app.post('/users/login', async (req, res) => {
         }
 
         const user = result.rows[0];
-
+        console.log(user)
         const isPasswordMatch = await bcrypt.compare(password, user.password);
         
         if (!isPasswordMatch) {
@@ -148,14 +150,14 @@ app.post('/users/login', async (req, res) => {
         // code to Generate the JSON Web Token for the user (not completed yet)
         const token = jwt.sign(
             { id: user.id, is_admin: user.is_admin }, // the user info
-            'your_jwt_secret', // Secret key to sign the token.
+            process.env.JWT_SECRET, // Secret key to sign the token.
             { expiresIn: '1h' } // Token expiration time
         );
         // for Successful Login
         console.log(`Login successful for user ID: ${user.id}`);
         res.status(200).json({
             message: 'Login successful.',
-            user: { id: user.id, name: user.name, email: user.email, is_admin: user.is_admin },
+            user,
             token
         });
     } catch (error) {
@@ -165,18 +167,20 @@ app.post('/users/login', async (req, res) => {
 });
 
 // profile route
-app.get('/profile/:id', async (req, res) => {
+app.get('/profile/:id', authenticateUser, async (req, res) => {
     try {
         const { id } = req.params;
+        console.log(id)
         const query = 'SELECT * FROM student WHERE id = $1';
         const values = [id];
-
+       
         const result = await pool.query(query, values);
-
+        console.log(result)
         if (result.rows.length === 0) {
             res.status(404).json({ error: 'User not found' });
         } else {
             const profileData = result.rows[0];
+            
             res.json({ profileData, id });
         }
     } catch (error) {
