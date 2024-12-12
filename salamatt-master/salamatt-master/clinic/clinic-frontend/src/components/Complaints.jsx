@@ -11,13 +11,14 @@ function Complaints() {
 
   useEffect(() => {
     const fetchComplaints = async () => {
+      const id = localStorage.getItem('id')
       try {
         const student = Auth.getCurrentUser();
         console.log("Fetched student from Auth:", student);
-        
-        if (student && student.id) {
-          setStudents_Id(student.id);
-          const response = await axios.get(`http://localhost:3000/complaints/${student.id}`);
+
+        if (student && id ) {
+          setStudents_Id(id);
+          const response = await axios.get(`http://localhost:3000/complaints/${id}`);
           console.log("Response data:", response.data);
           setComplaints(response.data.complaint ? [response.data.complaint] : []);
       } else {
@@ -35,7 +36,7 @@ function Complaints() {
     e.preventDefault();
     console.log(students_id);
 
-    // Validation for all fields
+    // Validation for all the fields so i can see where the error is coming from
   if (!symptoms) {
     console.error('Symptoms field is required.');
     return;

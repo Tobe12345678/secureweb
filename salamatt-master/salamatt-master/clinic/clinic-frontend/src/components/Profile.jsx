@@ -22,7 +22,8 @@ useEffect(() => {
 
   return (
     <div>
- <Link to="/complaints">Profile</Link>      
+      <button> <Link to="/complaints">Complaints</Link>   </button>
+    
  <h2>Profile</h2>
       <div>
         <p>ID: {id}</p>

@@ -6,7 +6,7 @@ const path = require('path') //Just added this today on 29th november
 const bcrypt = require('bcrypt')
 const rateLimit = require('express-rate-limit');
 const registerLimiter = rateLimit({
-    windowMs: 10 * 60 * 1000, // 10 minutes
+    windowMs: 10 * 60 * 1000, // limit of 7 requests every 10 minutes
     max: 7, // limit each IP address to 7 requests per window
 });
 
@@ -57,14 +57,13 @@ const authenticateUser = (req, res, next) => {
 // Middleware to check the user's role
 const authorizeRole = (role) => {
     return (req, res, next) => {
-      const { is_admin } = req.user || {}; // Assumes req.user is populated by an authentication middleware
+      const { is_admin } = req.user || {};
   
       // Check if the user has the required role
       if (role === 'admin' && !is_admin) {
         return res.status(403).json({ message: 'Access denied. Admins only.' });
       }
-  
-      next(); // User has the required role, proceed to the next middleware
+      next(); // If User has the required role, proceed to the next middleware
     };
   };
   
@@ -78,15 +77,15 @@ app.post('/users', async (req, res) => {
     try {
         const { name, age, gender, year, dept, email, password } = req.body;
 
-        // Code to Check if the password is at least 8 characters long
+        // password length validation (password must be at least 8 characters long)
     if (password.length < 8) {
         return res.status(400).json({ error: 'Password must be at least 8 characters long.' });
       }
 
         const query = 'INSERT INTO public.student (name, age, gender, year, dept, email, password) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *';
-        const hashed = bcrypt.hashSync(password, saltRounds);
+        const hashed = bcrypt.hashSync(password, saltRounds); //password hashing
 
-        const values = [name, age, gender, year, dept, email, hashed];
+        const values = [name, age, gender, year, dept, email, hashed]; //insert the hashed passwords into the database
         const result = await pool.query(query, values);
 
         res.status(201).json({ message: `User added: ${result.rows[0].name}` });
@@ -123,7 +122,7 @@ app.post('/users/login', async (req, res) => {
     try {
         const { email, password } = req.body;
 
-        // Check if email and password are provided
+        // Input validation for the login page. Check if email and password are provided
         if (!email || !password) {
             return res.status(400).json({ error: 'Email and password are required.' });
         }
@@ -146,11 +145,11 @@ app.post('/users/login', async (req, res) => {
             console.error(`Login failed: Invalid credentials for email - ${email}`);
             return res.status(401).json({ error: 'Invalid credentials. Please try again.' });
         }
-        // Generate the JWT for the user
+        // code to Generate the JSON Web Token for the user (not completed yet)
         const token = jwt.sign(
-            { id: user.id, is_admin: user.is_admin }, // Payload (user info)
-            'your_jwt_secret', // Secret key to sign the token (use a secure secret here)
-            { expiresIn: '1h' } // Token expiration time (optional)
+            { id: user.id, is_admin: user.is_admin }, // the user info
+            'your_jwt_secret', // Secret key to sign the token.
+            { expiresIn: '1h' } // Token expiration time
         );
         // for Successful Login
         console.log(`Login successful for user ID: ${user.id}`);
@@ -267,7 +266,7 @@ app.put('/complaints/:complaint_id', async (req, res) => {
         res.status(500).json({ error: 'Server error' });
     }
 });
-// just added this today 29th november 2024
+// linking my html file
 app.get('/', (req, res) => {
     res.sendFile(path.join(__dirname, '/clinic/clinic-frontend/index.html'));
 });
@@ -278,8 +277,8 @@ app.delete('/complaints/:complaint_id', async (req, res) => {
         const query = 'DELETE FROM complaints WHERE id = $1';
         const values = [complaint_id];
         await pool.query(query, values);
-        res.status(200).json({ message: 'Complaint deleted successfully.' });
-    } catch (error) {
+        res.status(200).json({ message: 'Complaint successfully deleted.' });
+     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Server error' });
     }

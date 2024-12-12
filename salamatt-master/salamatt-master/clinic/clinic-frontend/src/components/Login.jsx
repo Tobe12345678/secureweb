@@ -21,7 +21,7 @@ function Login() {
             }, {
                 timeout: 1000000, // Set a higher timeout value (in milliseconds)
             });
-            const { id, is_admin, name, email: emailFromDb } = response.data.user;
+            const { id, is_admin, name, email: emailFromDb} = response.data.user;
             const token = response.data.token;
 
             // Save the user's ID to localStorage
