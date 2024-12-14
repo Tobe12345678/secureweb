@@ -47,7 +47,7 @@ npm start
 4. **Submit Complaints**: use the complaints form to submit medical issues
 
 ## Security Improvement
-- **Password Hashing**: Ensures that passwords are stored in encrypted form in the database
+- **Password Hashing**: Ensures that passwords are hashed before they are stored in the postgreSQL database
 - **Rate Limiting**: helps protect against denial-of-service attacks and brute force attacks
 - **Input validation**: this prevents malicious input from being processed
 - **Token-Based authentication**: to ensure that only authorized users can access resources
