@@ -35,7 +35,7 @@ function Complaints() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     console.log(students_id);
-
+  
     // Validation for all the fields so i can see where the error is coming from
   if (!symptoms) {
     console.error('Symptoms field is required.');
@@ -52,10 +52,10 @@ function Complaints() {
     return;
   }
 
-  if (!students_id) {
-    console.error('Student ID is missing. Please log in.');
-    return;
-  }
+  // if (!students_id) {
+  //   console.error('Student ID is missing. Please log in.');
+  //   return;
+  // }
     try {
       const response = await axios.post('http://localhost:3000/complaints', {
         symptoms,
@@ -70,6 +70,7 @@ function Complaints() {
       setSymptoms('');
       setDuration('');
       setTakenDrugs('');
+
     } catch (error) {
       console.error('Error submitting complaint:', error);
     }

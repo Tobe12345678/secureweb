@@ -24,29 +24,21 @@ This project is about a school clinic management system that allows students to 
 - 'public' - contains html file
 
 ## Setup and Installation
-1. Clone this repository:
-'''bash 
+1. Clone this repository
 git clone https://github.com/Tobe12345678/secureweb.git
-'''
 
-2. Navigate to the project directory:
-'''bash
+2. Navigate to the project directory on your terminal:
 cd your-project-directory
-'''
 
-3. Install dependencies:
-'''bash
+3. Install dependencies on your terminal:
 npm install
-'''
 
 4. Set up a PostgreSQL database:
 - Create a database and name it, let's say 'clinic_database'.
 - update the database credentials in 'index.js'.
 
 5. Start the server:
-'''bash 
 npm start
-'''
 
 ## Usage 
 1. **Registration**: a user will create an account in the registration page
